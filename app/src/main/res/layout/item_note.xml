@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="note"
+            type="com.example.domain.models.Note" />
+        <variable
+            name="clickListener"
+            type="com.example.locationreminder.presentation.adapter.NoteClickListener" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/item_note_background"
+        android:padding="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:onClick="@{() -> clickListener.onClick(note)}">
+
+        <TextView
+            android:id="@+id/name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="@{note.name}"
+            style="@style/NoteName"
+            tools:text="Название карточки"/>
+
+        <TextView
+            android:id="@+id/description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="@{note.description}"
+            style="@style/NoteDescription"
+            tools:text="Очень длинное описание"/>
+
+        <!--todo: изменить текст места-->
+        <TextView
+            android:id="@+id/destination"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="PLACE" 
+            style="@style/NoteDestination"
+            tools:text="DSJFKLSDF"/>
+
+    </LinearLayout>
+</layout>

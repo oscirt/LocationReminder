@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Location Reminder</string>
+    <string name="add_fab_content_description">Кнопка добавления новой записи</string>
+    <string name="add_note_fragment_label">Добавить запись</string>
+    <string name="notes_list_fragment_label">Записи</string>
+    <string name="note_name_edit_hint">Введите название</string>
+    <string name="note_description_edit_hint">Введите описание</string>
+    <string name="no_data_empty_block_label">Нет записей</string>
+    <string name="note_info_fragment_label">Информация</string>
+</resources>

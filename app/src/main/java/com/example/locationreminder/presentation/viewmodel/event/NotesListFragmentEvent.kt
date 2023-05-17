@@ -1,0 +1,5 @@
+package com.example.locationreminder.presentation.viewmodel.event
+
+interface NotesListFragmentEvent
+
+class GetNotesListEvent : NotesListFragmentEvent
