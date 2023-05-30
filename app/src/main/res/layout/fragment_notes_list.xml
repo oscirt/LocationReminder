@@ -34,8 +34,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/no_data_empty_block_label"
-                android:layout_gravity="center"
-                android:textColor="@color/black"/>
+                android:layout_gravity="center"/>
 
         </LinearLayout>
 

@@ -14,7 +14,15 @@
       },
       "oauth_client": [
         {
-          "client_id": "978682710838-fbbk7k5ajqc2e1ugjg1jmjn1dgi4idqo.apps.googleusercontent.com",
+          "client_id": "978682710838-t8aq4nj6d92hmel4co766mnpfoj8dh1e.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.locationreminder",
+            "certificate_hash": "ef8f999d475e60a493140bc14ca6dd5ebc117d84"
+          }
+        },
+        {
+          "client_id": "978682710838-c6703bu7vhbfbujlikida6ec1samg3nf.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
@@ -27,7 +35,7 @@
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "978682710838-fbbk7k5ajqc2e1ugjg1jmjn1dgi4idqo.apps.googleusercontent.com",
+              "client_id": "978682710838-c6703bu7vhbfbujlikida6ec1samg3nf.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
