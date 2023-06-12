@@ -27,7 +27,9 @@ class NotesRepositoryImpl(
             id = noteEntity.id,
             name = noteEntity.name,
             description = noteEntity.description,
-            placeCoordinates = noteEntity.placeCoordinates
+            placeName = noteEntity.placeName,
+            latitude = noteEntity.latitude,
+            longitude = noteEntity.longitude
         )
     }
 
@@ -36,7 +38,9 @@ class NotesRepositoryImpl(
             id = note.id,
             name = note.name,
             description = note.description,
-            placeCoordinates = note.placeCoordinates
+            placeName = note.placeName,
+            latitude = note.latitude,
+            longitude = note.longitude
         )
     }
 }

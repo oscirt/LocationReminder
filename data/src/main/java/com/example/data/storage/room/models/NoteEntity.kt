@@ -9,5 +9,7 @@ data class NoteEntity(
     @PrimaryKey val id: Long,
     @ColumnInfo(name = "name") val name: String,
     @ColumnInfo(name = "description") val description: String,
-    @ColumnInfo(name = "place_coordinates") val placeCoordinates: String,
+    @ColumnInfo(name = "place_name") val placeName: String,
+    @ColumnInfo(name = "place_latitude") val latitude: Double,
+    @ColumnInfo(name = "place_longitude") val longitude: Double
 )

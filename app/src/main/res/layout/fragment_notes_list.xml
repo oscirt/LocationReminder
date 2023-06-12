@@ -39,6 +39,17 @@
         </LinearLayout>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/turn_on_location_service_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:src="@drawable/baseline_location_on_24"
+            android:contentDescription="@string/turn_on_location_fab_content_description"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/add_note_fab"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/add_note_fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

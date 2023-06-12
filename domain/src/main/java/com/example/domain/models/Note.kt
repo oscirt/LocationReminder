@@ -4,5 +4,7 @@ data class Note (
     val id: Long,
     val name: String,
     val description: String,
-    val placeCoordinates: String // TODO: поменять на норм тип
+    val placeName: String,
+    val latitude: Double,
+    val longitude: Double
 )

@@ -25,7 +25,7 @@ class NoteInfoViewModel @Inject constructor(
             id = -1,
             name = "",
             description = "",
-            placeCoordinates = ""
+            placeName = ""
         )
     }
 
@@ -44,7 +44,7 @@ class NoteInfoViewModel @Inject constructor(
                 id = note.id,
                 name = note.name,
                 description = note.description,
-                placeCoordinates = note.placeCoordinates
+                placeName = note.placeName
             )
         }
     }

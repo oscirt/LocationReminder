@@ -4,5 +4,5 @@ data class NoteInfoState(
     val id: Long,
     val name: String,
     val description: String,
-    val placeCoordinates: String
+    val placeName: String
 )

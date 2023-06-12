@@ -8,6 +8,7 @@ import com.example.domain.models.Note
 import com.example.domain.usecase.SaveNoteUseCase
 import com.example.locationreminder.presentation.viewmodel.event.AddNoteEvent
 import com.example.locationreminder.presentation.viewmodel.event.AddNoteFragmentEvent
+import com.example.locationreminder.presentation.viewmodel.event.SaveInputsEvent
 import com.example.locationreminder.presentation.viewmodel.state.AddNoteState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -26,29 +27,42 @@ class AddNoteViewModel @Inject constructor(
             id = -1,
             name = "",
             description = "",
-            placeCoordinates = ""
+            placeName = "",
+            latitude = .0,
+            longitude = .0
         )
     }
 
     fun send(event: AddNoteFragmentEvent) {
         when (event) {
-            is AddNoteEvent -> {
-                addNote(event.note)
-            }
+            is AddNoteEvent -> addNote(event.note)
+            is SaveInputsEvent -> saveInput(name = event.name, description = event.description)
         }
     }
 
     private fun addNote(note: Note) {
         viewModelScope.launch {
             val id = saveNoteUseCase.execute(note)
-            _state.postValue(
-                AddNoteState(
-                    id = id,
-                    name = note.name,
-                    description = note.description,
-                    placeCoordinates = note.placeCoordinates
-                )
+            _state.value = AddNoteState(
+                id = id,
+                name = note.name,
+                description = note.description,
+                placeName = note.placeName,
+                latitude = note.latitude,
+                longitude = note.longitude
             )
         }
+    }
+
+    private fun saveInput(name: String, description: String) {
+        val oldState = _state.value!!
+        _state.value = AddNoteState(
+            id = oldState.id,
+            name = name,
+            description = description,
+            placeName = oldState.placeName,
+            latitude = oldState.latitude,
+            longitude = oldState.longitude
+        )
     }
 }

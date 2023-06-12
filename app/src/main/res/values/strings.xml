@@ -7,4 +7,15 @@
     <string name="note_description_edit_hint">Введите описание</string>
     <string name="no_data_empty_block_label">Нет записей</string>
     <string name="note_info_fragment_label">Информация</string>
+    <string name="drawable_location">Местоположение</string>
+    <string name="select_destination_text">Укажите местоположение для напомнинания</string>
+    <string name="save_note_fab_content_description">Сохранение</string>
+    <string name="permissions_fragment_label">Разрешение</string>
+    <string name="map_fragment_label">Карта</string>
+    <string name="map_point_chosen">Точка выбрана</string>
+    <string name="map_poi_chosen">Выбрано: %s</string>
+
+    <string name="tracking_notification_channel_id">tracking_channel</string>
+    <string name="tracking_notification_channel_name">Отслеживание местоположения</string>
+    <string name="turn_on_location_fab_content_description">Включить отслеживание локации</string>
 </resources>

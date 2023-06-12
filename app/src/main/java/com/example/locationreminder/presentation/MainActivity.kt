@@ -1,7 +1,16 @@
 package com.example.locationreminder.presentation
 
-import androidx.appcompat.app.AppCompatActivity
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.pm.PackageManager
+import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
@@ -12,6 +21,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var navController: NavController
+    private lateinit var notificationManager: NotificationManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,6 +34,55 @@ class MainActivity : AppCompatActivity() {
             activity = this,
             navController = navController
         )
+
+        notificationManager = ContextCompat.getSystemService(
+            this, NotificationManager::class.java
+        ) as NotificationManager
+
+        createNotificationChannel(
+            getString(R.string.tracking_notification_channel_id),
+            getString(R.string.tracking_notification_channel_name)
+        )
+
+        val requestPermissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+                if (!isGranted) {
+                    Toast.makeText(
+                        this,
+                        "Без этого разрешения нельзя показывать уведомления о местоположении",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+
+        if (Build.VERSION.SDK_INT > 32 && ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    private fun createNotificationChannel(
+        channelId: String,
+        channelName: String
+    ) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationChannel = NotificationChannel(
+                channelId,
+                channelName,
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                setShowBadge(false)
+                enableLights(true)
+                lightColor = Color.BLUE
+                enableVibration(false)
+                description = "Отслеживание местоположения"
+            }
+
+            notificationManager.createNotificationChannel(notificationChannel)
+        }
     }
 
     override fun onSupportNavigateUp(): Boolean {

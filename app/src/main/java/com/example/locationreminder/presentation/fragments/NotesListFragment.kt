@@ -1,23 +1,28 @@
 package com.example.locationreminder.presentation.fragments
 
+import android.Manifest
 import android.app.Activity.RESULT_OK
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
+import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.locationreminder.R
 import com.example.locationreminder.databinding.FragmentNotesListBinding
+import com.example.locationreminder.other.Constants.ACTION_START_OR_RESUME_SERVICE
 import com.example.locationreminder.presentation.adapter.NoteClickListener
 import com.example.locationreminder.presentation.adapter.NotesRecyclerViewAdapter
 import com.example.locationreminder.presentation.viewmodel.NotesViewModel
 import com.example.locationreminder.presentation.viewmodel.event.GetNotesListEvent
+import com.example.locationreminder.services.LocationService
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
@@ -75,17 +80,33 @@ class NotesListFragment : Fragment() {
         }
 
         binding.addNoteFab.setOnClickListener {
-            findNavController().navigate(R.id.action_notesListFragment_to_addNoteFragment)
+            findNavController().navigate(R.id.action_notesListFragment_to_add_note_graph)
+        }
+
+        binding.turnOnLocationServiceFab.setOnClickListener {
+            // TODO: добавить возможность отключения отслеживания
+            sendCommandToService(ACTION_START_OR_RESUME_SERVICE)
         }
 
         return binding.root
     }
 
-        override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         if (auth.currentUser == null) {
             signIn()
+        }
+
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            findNavController().navigate(R.id.action_notesListFragment_to_locationPermissionFragment)
         }
     }
 
@@ -108,9 +129,21 @@ class NotesListFragment : Fragment() {
             Log.d(TAG, "SignIn ok")
         } else {
             Log.d(TAG, "SignIn not ok: ${result.resultCode}")
-            Snackbar.make(requireView(), "Error: ${result.idpResponse?.error?.message}", Snackbar.LENGTH_LONG)
+            Snackbar.make(
+                requireView(),
+                "Error: ${result.idpResponse?.error?.message}",
+                Snackbar.LENGTH_LONG
+            )
                 .show()
             signIn()
+        }
+    }
+
+    private fun sendCommandToService(action: String) {
+        val activity = requireActivity()
+        Intent(activity.applicationContext, LocationService::class.java).apply {
+            this.action = action
+            activity.startService(this)
         }
     }
 

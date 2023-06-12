@@ -20,6 +20,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
+        android:elevation="@dimen/cardview_default_elevation"
         android:onClick="@{() -> clickListener.onClick(note)}">
 
         <TextView
@@ -40,14 +41,13 @@
             style="@style/NoteDescription"
             tools:text="Очень длинное описание"/>
 
-        <!--todo: изменить текст места-->
         <TextView
             android:id="@+id/destination"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="PLACE" 
+            android:text="@{note.placeName}"
             style="@style/NoteDestination"
-            tools:text="DSJFKLSDF"/>
+            tools:text="Пятерочка"/>
 
     </LinearLayout>
 </layout>

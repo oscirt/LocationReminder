@@ -64,4 +64,7 @@
 
     <color name="md_theme_light_destination_text_container">#110068</color>
     <color name="md_theme_dark_destination_text_container">#e3dfff</color>
+
+    <color name="map_marker_stroke_color">#00BCD4</color>
+    <color name="map_marker_background_color">#332B9CAB</color>
 </resources>

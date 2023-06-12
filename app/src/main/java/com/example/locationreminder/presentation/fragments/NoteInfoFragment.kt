@@ -8,7 +8,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
-import com.example.domain.models.Note
 import com.example.locationreminder.R
 import com.example.locationreminder.databinding.FragmentNoteInfoBinding
 import com.example.locationreminder.presentation.viewmodel.NoteInfoViewModel
@@ -38,12 +37,7 @@ class NoteInfoFragment : Fragment() {
         viewModel.send(GetNoteById(args.id))
 
         viewModel.state.observe(viewLifecycleOwner) {
-            binding.note = Note(
-                id = it.id,
-                name = it.name,
-                description = it.description,
-                placeCoordinates = it.placeCoordinates
-            )
+            binding.noteState = it
         }
 
         return binding.root
