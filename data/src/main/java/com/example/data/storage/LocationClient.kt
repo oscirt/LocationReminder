@@ -5,6 +5,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface LocationClient {
     fun getLocationUpdates(interval: Long): Flow<Location>
-
+//    fun checkGPS()
     class LocationException(message: String): Exception()
 }

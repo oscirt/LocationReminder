@@ -12,8 +12,12 @@
     <string name="save_note_fab_content_description">Сохранение</string>
     <string name="permissions_fragment_label">Разрешение</string>
     <string name="map_fragment_label">Карта</string>
+    <string name="settings_location_permission_text">Невозможно получить разрешение на местоположение. Перейдите в настройки приложения для предоставления разрешения. Открыть настройки?</string>
+    <string name="settings_location_permission_positive">Да</string>
+    <string name="settings_location_permission_negative">Нет</string>
 
     <string name="tracking_notification_channel_id">tracking_channel</string>
     <string name="tracking_notification_channel_name">Отслеживание местоположения</string>
     <string name="turn_on_location_fab_content_description">Включить отслеживание локации</string>
+    <string name="empty_box_drawable_descrtiption">empty_box</string>
 </resources>

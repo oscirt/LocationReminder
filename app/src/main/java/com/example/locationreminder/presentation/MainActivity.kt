@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import com.example.locationreminder.R
 import dagger.hilt.android.AndroidEntryPoint
@@ -30,9 +31,11 @@ class MainActivity : AppCompatActivity() {
         val navHost = supportFragmentManager
             .findFragmentById(R.id.fragment_container) as NavHostFragment
         navController = navHost.navController
+        val appbarConfiguration = AppBarConfiguration(setOf(R.id.notesListFragment, R.id.locationPermissionFragment))
         NavigationUI.setupActionBarWithNavController(
             activity = this,
-            navController = navController
+            navController = navController,
+            appbarConfiguration
         )
 
         notificationManager = ContextCompat.getSystemService(

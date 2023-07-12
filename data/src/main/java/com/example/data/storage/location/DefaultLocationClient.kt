@@ -5,6 +5,7 @@ import android.content.Context
 import android.location.Location
 import android.location.LocationManager
 import android.os.Looper
+import android.util.Log
 import com.example.data.storage.LocationClient
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -32,6 +33,7 @@ class DefaultLocationClient(
             if (!isGpsEnabled && !isNetworkEnabled) {
                 throw LocationClient.LocationException("GPS is disabled")
             }
+            Log.d("DefaultLocationClient", "getLocationUpdates: $isGpsEnabled|$isNetworkEnabled")
 
             val request = LocationRequest.Builder(interval).build()
 
@@ -46,6 +48,9 @@ class DefaultLocationClient(
                 }
             }
 
+            if (!LocationUtility.hasLocationPermission(context)) {
+                throw LocationClient.LocationException("Missing location permission")
+            }
             client.requestLocationUpdates(
                 request,
                 locationCallback,
@@ -56,5 +61,9 @@ class DefaultLocationClient(
                 client.removeLocationUpdates(locationCallback)
             }
         }
+    }
+
+    private companion object {
+        private const val TAG = "DefaultLocationClient"
     }
 }

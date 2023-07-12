@@ -12,31 +12,23 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:layout_editor_absoluteX="-62dp"
+            tools:layout_editor_absoluteY="-202dp"
             tools:listitem="@layout/item_note" />
 
-        <LinearLayout
+        <TextView
             android:id="@+id/empty_block"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:text="@string/no_data_empty_block_label"
+            android:gravity="center"
             android:visibility="gone"
+            android:contentDescription="@string/empty_box_drawable_descrtiption"
+            app:drawableTopCompat="@drawable/empty_box"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <ImageView
-                android:layout_width="144dp"
-                android:layout_height="144dp"
-                android:src="@drawable/empty_box" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/no_data_empty_block_label"
-                android:layout_gravity="center"/>
-
-        </LinearLayout>
+            app:layout_constraintTop_toTopOf="parent"/>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/turn_on_location_service_fab"

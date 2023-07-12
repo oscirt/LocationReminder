@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/notesListFragment">
+    app:startDestination="@id/locationPermissionFragment">
 
     <fragment
         android:id="@+id/notesListFragment"
@@ -13,9 +13,6 @@
         <action
             android:id="@+id/action_notesListFragment_to_noteInfoFragment"
             app:destination="@id/noteInfoFragment" />
-        <action
-            android:id="@+id/action_notesListFragment_to_locationPermissionFragment"
-            app:destination="@id/locationPermissionFragment" />
         <action
             android:id="@+id/action_notesListFragment_to_add_note_graph"
             app:destination="@id/add_note_graph" />
@@ -34,6 +31,12 @@
         android:id="@+id/locationPermissionFragment"
         android:name="com.example.locationreminder.presentation.fragments.LocationPermissionFragment"
         android:label="@string/permissions_fragment_label"
-        tools:layout="@layout/fragment_location_permission"/>
+        tools:layout="@layout/fragment_location_permission">
+        <action
+            android:id="@+id/action_locationPermissionFragment_to_notesListFragment"
+            app:destination="@id/notesListFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+    </fragment>
     <include app:graph="@navigation/add_note_graph" />
 </navigation>

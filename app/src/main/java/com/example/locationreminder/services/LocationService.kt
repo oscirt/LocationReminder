@@ -11,7 +11,6 @@ import com.example.data.storage.LocationClient
 import com.example.domain.models.Note
 import com.example.domain.usecase.GetNotesUseCase
 import com.example.locationreminder.R
-import com.example.locationreminder.other.Constants.ACTION_PAUSE_SERVICE
 import com.example.locationreminder.other.Constants.ACTION_START_OR_RESUME_SERVICE
 import com.example.locationreminder.other.Constants.ACTION_STOP_SERVICE
 import com.google.android.gms.maps.model.LatLng
@@ -49,10 +48,6 @@ class LocationService : Service() {
                     start()
                 }
 
-                ACTION_PAUSE_SERVICE -> {
-                    Log.d(TAG, "Pause service")
-                }
-
                 ACTION_STOP_SERVICE -> {
                     Log.d(TAG, "Stop service")
                     stop()
@@ -63,7 +58,7 @@ class LocationService : Service() {
                 }
             }
         }
-        return super.onStartCommand(intent, flags, startId)
+        return START_STICKY
     }
 
     private fun start() {
@@ -71,7 +66,7 @@ class LocationService : Service() {
             NotificationCompat.Builder(this, getString(R.string.tracking_notification_channel_id))
                 .setContentTitle(getString(R.string.app_name))
                 .setContentText("Загрузка местоположения...")
-                .setSmallIcon(R.drawable.notification_icon)
+                .setSmallIcon(R.drawable.baseline_location_on_24)
                 .setOngoing(true)
 
         var notes = listOf<Note>()
@@ -138,7 +133,7 @@ class LocationService : Service() {
     }
 
     private companion object {
-        private const val TAG = "TrackingService"
+        private const val TAG = "LocationService"
 
         private const val NOTIFICATION_ID = 123321
     }
