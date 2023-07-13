@@ -4,6 +4,7 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.os.Binder
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -34,6 +35,13 @@ class LocationService : Service() {
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
+    private lateinit var notes: List<Note>
+
+    private val locationServiceBinder = LocationServiceBinder()
+
+    private lateinit var notification: NotificationCompat.Builder
+    private lateinit var notificationManager: NotificationManager
+
     @Inject
     lateinit var getNotesUseCase: GetNotesUseCase
 
@@ -62,24 +70,21 @@ class LocationService : Service() {
     }
 
     private fun start() {
-        val notification =
+        notification =
             NotificationCompat.Builder(this, getString(R.string.tracking_notification_channel_id))
                 .setContentTitle(getString(R.string.app_name))
                 .setContentText("Загрузка местоположения...")
                 .setSmallIcon(R.drawable.baseline_location_on_24)
                 .setOngoing(true)
 
-        var notes = listOf<Note>()
+        updateNotesList()
 
-        serviceScope.launch { notes = getNotesUseCase.execute() }
-
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         locationClient
             .getLocationUpdates(2000L)
             .catch { it.printStackTrace() }
             .onEach { location ->
-                Log.d("TAG", "onLocationResult: $location")
                 var minName = ""
                 var minDistance = Double.MAX_VALUE
                 for (i in notes) {
@@ -92,11 +97,23 @@ class LocationService : Service() {
                         minName = i.name
                     }
                 }
-                val updatedNotification =
-                    notification
-                        .setContentTitle(minName)
-                        .setContentText("${minDistance.toString().take(4)} км")
-                notificationManager.notify(NOTIFICATION_ID, updatedNotification.build())
+                if (minDistance < 0.2) {
+                    Log.d(TAG, "ALERT! ALERT! ALERT!")
+                    updateNotification(
+                        name = "ALERT! ALERT! ALERT!",
+                        text = "Вы близко с $minName"
+                    )
+                } else if (minDistance == Double.MAX_VALUE) {
+                    updateNotification(
+                        name = "Нет записей",
+                        text = "Добавьте записи для отслеживания"
+                    )
+                } else {
+                    updateNotification(
+                        name = minName,
+                        text = "${(minDistance - 0.2).toString().take(4)} км"
+                    )
+                }
             }.launchIn(serviceScope)
 
         startForeground(NOTIFICATION_ID, notification.build())
@@ -123,13 +140,41 @@ class LocationService : Service() {
         )
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
+    private fun updateNotification(name: String, text: String) {
+        val updatedNotification =
+            notification
+                .setContentTitle(name)
+                .setContentText(text)
+        notificationManager.notify(NOTIFICATION_ID, updatedNotification.build())
+    }
+
+    override fun onBind(intent: Intent?): IBinder {
+        Log.d(TAG, "binded")
+        return locationServiceBinder
+    }
+
+    override fun onUnbind(intent: Intent?): Boolean {
+        Log.d(TAG, "unbinded")
+        return super.onUnbind(intent)
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        Log.d(TAG, "onDestroy")
         serviceScope.cancel()
+    }
+
+    fun updateNotesList() {
+        serviceScope.launch {
+            notes = getNotesUseCase.execute().filter { !it.isChecked }
+            Log.d(TAG, "updated list: $notes")
+        }
+    }
+
+    inner class LocationServiceBinder : Binder() {
+        fun getService() : LocationService {
+            return this@LocationService
+        }
     }
 
     private companion object {

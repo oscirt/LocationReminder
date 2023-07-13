@@ -41,7 +41,7 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
-            android:id="@+id/location_reminder"
+            android:id="@+id/location_picker"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
@@ -71,7 +71,7 @@
             android:minHeight="48dp"
             android:gravity="center"
             style="@style/NoteDestination"
-            app:layout_constraintTop_toBottomOf="@id/location_reminder"
+            app:layout_constraintTop_toBottomOf="@id/location_picker"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 

@@ -1,6 +1,7 @@
 package com.example.locationreminder.di
 
 import com.example.domain.repository.NotesRepository
+import com.example.domain.usecase.CheckNoteUseCase
 import com.example.domain.usecase.GetNoteByIdUseCase
 import com.example.domain.usecase.GetNotesUseCase
 import com.example.domain.usecase.SaveNoteUseCase
@@ -26,5 +27,10 @@ class DomainModule {
     @Provides
     fun provideGetNoteByIdUseCase(repository: NotesRepository) : GetNoteByIdUseCase {
         return GetNoteByIdUseCase(notesRepository = repository)
+    }
+
+    @Provides
+    fun provideCheckNoteUseCase(repository: NotesRepository) : CheckNoteUseCase {
+        return CheckNoteUseCase(repository)
     }
 }

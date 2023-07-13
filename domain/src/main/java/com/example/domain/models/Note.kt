@@ -6,5 +6,6 @@ data class Note (
     val description: String,
     val placeName: String,
     val latitude: Double,
-    val longitude: Double
+    val longitude: Double,
+    var isChecked: Boolean
 )

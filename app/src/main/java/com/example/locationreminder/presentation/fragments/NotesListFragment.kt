@@ -1,14 +1,17 @@
 package com.example.locationreminder.presentation.fragments
 
 import android.app.Activity.RESULT_OK
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
+import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.IBinder
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -16,12 +19,14 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.example.data.storage.location.LocationUtility
 import com.example.locationreminder.R
 import com.example.locationreminder.databinding.FragmentNotesListBinding
 import com.example.locationreminder.other.Constants.ACTION_START_OR_RESUME_SERVICE
 import com.example.locationreminder.presentation.adapter.NoteClickListener
 import com.example.locationreminder.presentation.adapter.NotesRecyclerViewAdapter
 import com.example.locationreminder.presentation.viewmodel.NotesViewModel
+import com.example.locationreminder.presentation.viewmodel.event.CheckerNoteListEvent
 import com.example.locationreminder.presentation.viewmodel.event.GetNotesListEvent
 import com.example.locationreminder.services.LocationService
 import com.firebase.ui.auth.AuthUI
@@ -54,6 +59,9 @@ class NotesListFragment : Fragment() {
     private lateinit var notesAdapter: NotesRecyclerViewAdapter
     private lateinit var signInLauncher: ActivityResultLauncher<Intent>
 
+    private var isBound = false
+    private var locationService: LocationService? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -72,11 +80,29 @@ class NotesListFragment : Fragment() {
             onSignInResult(it)
         }
 
-        notesAdapter = NotesRecyclerViewAdapter(NoteClickListener {
-            findNavController().navigate(
-                NotesListFragmentDirections.actionNotesListFragmentToNoteInfoFragment(it.id)
-            )
-        })
+        val serviceIntent = Intent(requireContext(), LocationService::class.java)
+        requireContext().bindService(serviceIntent, object : ServiceConnection {
+            override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+                isBound = true
+                locationService = (service as? LocationService.LocationServiceBinder)?.getService()
+            }
+
+            override fun onServiceDisconnected(name: ComponentName?) {
+                isBound = false
+                locationService = null
+            }
+        }, Context.BIND_AUTO_CREATE)
+
+        notesAdapter = NotesRecyclerViewAdapter(
+            NoteClickListener {
+                findNavController().navigate(
+                    NotesListFragmentDirections.actionNotesListFragmentToNoteInfoFragment(it.id)
+                )
+            },
+            NoteClickListener {
+                notesListViewModel.send(CheckerNoteListEvent(it))
+            }
+        )
 
         binding.notesList.adapter = notesAdapter
 
@@ -84,6 +110,7 @@ class NotesListFragment : Fragment() {
 
         notesListViewModel.state.observe(viewLifecycleOwner) {
             notesAdapter.submitList(it.notesList)
+            if (isBound) locationService!!.updateNotesList()
             binding.emptyBlock.visibility = if (it.notesList.isEmpty()) View.VISIBLE else View.GONE
         }
 
@@ -100,45 +127,44 @@ class NotesListFragment : Fragment() {
         }
 
         binding.turnOnLocationServiceFab.setOnClickListener {
-            // TODO: добавить возможность отключения отслеживания
-            // TODO: вынести логику проверки GPS наружу и провести проверку при открытии карт
-            val locationRequest = LocationRequest.Builder(3000)
-                .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
-                .build()
-            val locationSettingsRequest = LocationSettingsRequest.Builder()
-                .addLocationRequest(locationRequest)
-                .setAlwaysShow(true)
-                .build()
+            if (LocationUtility.hasLocationPermission(requireContext())) {
+                val locationRequest = LocationRequest.Builder(3000)
+                    .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                    .build()
+                val locationSettingsRequest = LocationSettingsRequest.Builder()
+                    .addLocationRequest(locationRequest)
+                    .setAlwaysShow(true)
+                    .build()
 
-            LocationServices.getSettingsClient(requireContext())
-                .checkLocationSettings(locationSettingsRequest)
-                .addOnCompleteListener {
-                    try {
-                        it.getResult(ApiException::class.java)
-                        sendCommandToService(ACTION_START_OR_RESUME_SERVICE)
-                        Log.d(TAG, "onCreateView: GPS already enabled")
-                    } catch (e: ApiException) {
-                        if (e.statusCode == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
-                            val exception = e as ResolvableApiException
-                            Log.d(TAG, "onCreateView: $exception")
-                            try {
-                                val intentSenderRequest = IntentSenderRequest
-                                    .Builder(exception.resolution)
-                                    .build()
-                                locationLauncher.launch(intentSenderRequest)
-                            } catch (sendIntentException: IntentSender.SendIntentException) {
-                                sendIntentException.printStackTrace()
+                LocationServices.getSettingsClient(requireContext())
+                    .checkLocationSettings(locationSettingsRequest)
+                    .addOnCompleteListener {
+                        try {
+                            it.getResult(ApiException::class.java)
+                            sendCommandToService(ACTION_START_OR_RESUME_SERVICE)
+                            Log.d(TAG, "GPS already enabled")
+                        } catch (e: ApiException) {
+                            if (e.statusCode == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
+                                val exception = e as ResolvableApiException
+                                try {
+                                    val intentSenderRequest = IntentSenderRequest
+                                        .Builder(exception.resolution)
+                                        .build()
+                                    locationLauncher.launch(intentSenderRequest)
+                                } catch (sendIntentException: IntentSender.SendIntentException) {
+                                    sendIntentException.printStackTrace()
+                                }
+                            }
+                            if (e.statusCode == LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE) {
+                                Snackbar.make(
+                                    requireView(),
+                                    "GPS недоступно.",
+                                    Snackbar.LENGTH_LONG
+                                ).show()
                             }
                         }
-                        if (e.statusCode == LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE) {
-                            Toast.makeText(
-                                requireContext(),
-                                "GPS not available",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
                     }
-                }
+            }
         }
 
         return binding.root

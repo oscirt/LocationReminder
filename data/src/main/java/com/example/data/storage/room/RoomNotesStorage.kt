@@ -22,4 +22,8 @@ class RoomNotesStorage(
     override suspend fun addNote(note: NoteEntity): Long {
         return notesDao.addNote(note)
     }
+
+    override suspend fun updateNote(note: NoteEntity) {
+        notesDao.updateNote(note)
+    }
 }

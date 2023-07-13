@@ -4,10 +4,11 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
 import com.example.data.storage.room.dao.NotesDao
 import com.example.data.storage.room.models.NoteEntity
 
-@Database(entities = [NoteEntity::class], version = 1)
+@Database(entities = [NoteEntity::class], version = 2)
 abstract class NotesDatabase : RoomDatabase() {
     abstract fun notesDao() : NotesDao
 
@@ -21,7 +22,10 @@ abstract class NotesDatabase : RoomDatabase() {
                     context,
                     NotesDatabase::class.java,
                     "notes_database"
-                ).build()
+                ).addMigrations(Migration(1, 2) {
+                    it.execSQL("ALTER TABLE notes ADD is_checked INTEGER NOT NULL DEFAULT 0")
+                })
+                    .build()
 
                 INSTANCE = instance
 

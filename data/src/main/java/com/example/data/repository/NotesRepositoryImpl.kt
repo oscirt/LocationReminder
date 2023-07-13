@@ -22,6 +22,11 @@ class NotesRepositoryImpl(
         return notesStorage.addNote(noteEntity)
     }
 
+    override suspend fun updateNote(note: Note) {
+        val noteEntity = mapNoteToNoteEntity(note)
+        notesStorage.updateNote(noteEntity)
+    }
+
     private fun mapNoteEntityToNote(noteEntity: NoteEntity) : Note {
         return Note(
             id = noteEntity.id,
@@ -29,7 +34,8 @@ class NotesRepositoryImpl(
             description = noteEntity.description,
             placeName = noteEntity.placeName,
             latitude = noteEntity.latitude,
-            longitude = noteEntity.longitude
+            longitude = noteEntity.longitude,
+            isChecked = noteEntity.isChecked
         )
     }
 
@@ -40,7 +46,8 @@ class NotesRepositoryImpl(
             description = note.description,
             placeName = note.placeName,
             latitude = note.latitude,
-            longitude = note.longitude
+            longitude = note.longitude,
+            isChecked = note.isChecked
         )
     }
 }

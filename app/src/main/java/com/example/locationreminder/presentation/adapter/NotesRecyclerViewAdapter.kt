@@ -9,13 +9,16 @@ import com.example.domain.models.Note
 import com.example.locationreminder.databinding.ItemNoteBinding
 
 class NotesRecyclerViewAdapter(
-    private val noteClickListener: NoteClickListener
+    private val noteClickListener: NoteClickListener,
+    private val checkboxClickListener: NoteClickListener
 ) : ListAdapter<Note, NotesRecyclerViewAdapter.NoteViewHolder>(DiffCallback){
 
     class NoteViewHolder(private val binding: ItemNoteBinding) : ViewHolder(binding.root) {
-        fun bind(note: Note, clickListener: NoteClickListener) {
+        fun bind(note: Note, clickListener: NoteClickListener,
+                 checkboxClickListener: NoteClickListener) {
             binding.note = note
             binding.clickListener = clickListener
+            binding.checkboxClickListener = checkboxClickListener
         }
     }
 
@@ -30,7 +33,8 @@ class NotesRecyclerViewAdapter(
         val note = getItem(position)
         holder.bind(
             note = note,
-            clickListener = noteClickListener
+            clickListener = noteClickListener,
+            checkboxClickListener = checkboxClickListener
         )
     }
 

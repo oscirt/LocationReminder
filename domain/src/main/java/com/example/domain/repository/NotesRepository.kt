@@ -6,4 +6,5 @@ interface NotesRepository {
     suspend fun getAll() : List<Note>
     suspend fun getById(id: Long) : Note
     suspend fun addNote(note: Note) : Long
+    suspend fun updateNote(note: Note)
 }
