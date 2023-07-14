@@ -5,6 +5,7 @@ import com.example.domain.usecase.CheckNoteUseCase
 import com.example.domain.usecase.GetNoteByIdUseCase
 import com.example.domain.usecase.GetNotesUseCase
 import com.example.domain.usecase.SaveNoteUseCase
+import com.example.domain.usecase.UpdateNoteUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -31,6 +32,11 @@ class DomainModule {
 
     @Provides
     fun provideCheckNoteUseCase(repository: NotesRepository) : CheckNoteUseCase {
-        return CheckNoteUseCase(repository)
+        return CheckNoteUseCase(notesRepository = repository)
+    }
+
+    @Provides
+    fun provideUpdateNoteUseCase(repository: NotesRepository) : UpdateNoteUseCase {
+        return UpdateNoteUseCase(notesRepository = repository)
     }
 }

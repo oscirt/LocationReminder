@@ -1,6 +1,7 @@
 package com.example.locationreminder.services
 
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -8,12 +9,18 @@ import android.os.Binder
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.example.data.storage.LocationClient
 import com.example.domain.models.Note
+import com.example.domain.usecase.CheckNoteUseCase
 import com.example.domain.usecase.GetNotesUseCase
 import com.example.locationreminder.R
 import com.example.locationreminder.other.Constants.ACTION_START_OR_RESUME_SERVICE
 import com.example.locationreminder.other.Constants.ACTION_STOP_SERVICE
+import com.example.locationreminder.other.Constants.NOTIFICATION_ID
+import com.example.locationreminder.other.Constants.REACHED_NOTIFICATION_ID
+import com.example.locationreminder.presentation.MainActivity
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -42,8 +49,14 @@ class LocationService : Service() {
     private lateinit var notification: NotificationCompat.Builder
     private lateinit var notificationManager: NotificationManager
 
+    private var _status = MutableLiveData(false)
+    val status: LiveData<Boolean> get() = _status
+
     @Inject
     lateinit var getNotesUseCase: GetNotesUseCase
+
+    @Inject
+    lateinit var checkNoteUseCase: CheckNoteUseCase
 
     @Inject
     lateinit var locationClient: LocationClient
@@ -85,7 +98,7 @@ class LocationService : Service() {
             .getLocationUpdates(2000L)
             .catch { it.printStackTrace() }
             .onEach { location ->
-                var minName = ""
+                lateinit var minNote: Note
                 var minDistance = Double.MAX_VALUE
                 for (i in notes) {
                     val distance = calculateDistance(
@@ -94,15 +107,12 @@ class LocationService : Service() {
                     )
                     if (distance < minDistance) {
                         minDistance = distance
-                        minName = i.name
+                        minNote = i
                     }
                 }
                 if (minDistance < 0.2) {
                     Log.d(TAG, "ALERT! ALERT! ALERT!")
-                    updateNotification(
-                        name = "ALERT! ALERT! ALERT!",
-                        text = "Вы близко с $minName"
-                    )
+                    reachedGeoZone(minNote)
                 } else if (minDistance == Double.MAX_VALUE) {
                     updateNotification(
                         name = "Нет записей",
@@ -110,7 +120,7 @@ class LocationService : Service() {
                     )
                 } else {
                     updateNotification(
-                        name = minName,
+                        name = minNote.name,
                         text = "${(minDistance - 0.2).toString().take(4)} км"
                     )
                 }
@@ -171,6 +181,37 @@ class LocationService : Service() {
         }
     }
 
+    private fun reachedGeoZone(note: Note) {
+        serviceScope.launch {
+            checkNoteUseCase.execute(note)
+            updateNotesList()
+            _status.postValue(_status.value!!.not())
+            val reachedNotification = NotificationCompat.Builder(applicationContext, getString(R.string.tracking_notification_channel_id))
+                .setSmallIcon(R.drawable.baseline_flag_24)
+            val contentIntent = Intent(applicationContext, MainActivity::class.java).apply {
+                putExtra("id", note.id)
+                flags = Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP
+            }
+            val pendingIntent = PendingIntent.getActivity(
+                applicationContext,
+                REACHED_NOTIFICATION_ID,
+                contentIntent,
+                PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+            )
+            reachedNotification
+                .setContentTitle(note.name)
+                .setContentText("Вы находитесь около ${note.name}")
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent)
+                .addAction(
+                    R.drawable.baseline_flag_24,
+                    "Подробнее",
+                    pendingIntent
+                ).priority = NotificationCompat.PRIORITY_MAX
+            notificationManager.notify(REACHED_NOTIFICATION_ID, reachedNotification.build())
+        }
+    }
+
     inner class LocationServiceBinder : Binder() {
         fun getService() : LocationService {
             return this@LocationService
@@ -179,7 +220,5 @@ class LocationService : Service() {
 
     private companion object {
         private const val TAG = "LocationService"
-
-        private const val NOTIFICATION_ID = 123321
     }
 }

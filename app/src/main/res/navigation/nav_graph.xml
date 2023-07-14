@@ -12,10 +12,15 @@
         tools:layout="@layout/fragment_notes_list">
         <action
             android:id="@+id/action_notesListFragment_to_noteInfoFragment"
-            app:destination="@id/noteInfoFragment" />
+            app:destination="@id/noteInfoFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_notesListFragment_to_add_note_graph"
             app:destination="@id/add_note_graph" />
+        <action
+            android:id="@+id/action_notesListFragment_to_noteUpdateFragment"
+            app:destination="@id/noteUpdateFragment" />
     </fragment>
     <fragment
         android:id="@+id/noteInfoFragment"
@@ -39,4 +44,13 @@
             app:popUpToInclusive="true" />
     </fragment>
     <include app:graph="@navigation/add_note_graph" />
+    <fragment
+        android:id="@+id/noteUpdateFragment"
+        android:name="com.example.locationreminder.presentation.fragments.NoteUpdateFragment"
+        android:label="@string/update_note_label"
+        tools:layout="@layout/fragment_note_update">
+        <argument
+            android:name="id"
+            app:argType="long" />
+    </fragment>
 </navigation>

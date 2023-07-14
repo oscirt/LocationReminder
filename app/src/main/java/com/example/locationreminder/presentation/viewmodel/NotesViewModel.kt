@@ -47,11 +47,7 @@ class NotesViewModel @Inject constructor(
             val mut = _state.value!!.notesList.map { it.copy() }
             mut[mut.indexOf(note)].isChecked = note.isChecked.not()
             _state.postValue(NotesListState(mut.toList()))
-            checkNoteUseCase.execute(note.copy(isChecked = note.isChecked.not()))
+            checkNoteUseCase.execute(note)
         }
-    }
-
-    private companion object {
-        private const val TAG = "NotesViewModel"
     }
 }

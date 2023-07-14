@@ -66,108 +66,123 @@ class NotesListFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        binding = DataBindingUtil.inflate(
-            inflater,
-            R.layout.fragment_notes_list,
-            container,
-            false
-        )
-
-        signInLauncher = registerForActivityResult(
-            FirebaseAuthUIActivityResultContract()
-        ) {
-            onSignInResult(it)
-        }
-
-        val serviceIntent = Intent(requireContext(), LocationService::class.java)
-        requireContext().bindService(serviceIntent, object : ServiceConnection {
-            override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-                isBound = true
-                locationService = (service as? LocationService.LocationServiceBinder)?.getService()
-            }
-
-            override fun onServiceDisconnected(name: ComponentName?) {
-                isBound = false
-                locationService = null
-            }
-        }, Context.BIND_AUTO_CREATE)
-
-        notesAdapter = NotesRecyclerViewAdapter(
-            NoteClickListener {
-                findNavController().navigate(
-                    NotesListFragmentDirections.actionNotesListFragmentToNoteInfoFragment(it.id)
+    ): View? {
+        requireActivity().intent.extras?.let {
+            Log.d(TAG, "EXTRAS")
+            findNavController().navigate(
+                NotesListFragmentDirections.actionNotesListFragmentToNoteInfoFragment(
+                    it.getLong("id")
                 )
-            },
-            NoteClickListener {
-                notesListViewModel.send(CheckerNoteListEvent(it))
+            )
+            return null
+        } ?: run {
+            binding = DataBindingUtil.inflate(
+                inflater,
+                R.layout.fragment_notes_list,
+                container,
+                false
+            )
+
+            signInLauncher = registerForActivityResult(
+                FirebaseAuthUIActivityResultContract()
+            ) {
+                onSignInResult(it)
             }
-        )
 
-        binding.notesList.adapter = notesAdapter
+            val serviceIntent = Intent(requireContext(), LocationService::class.java)
+            requireContext().bindService(serviceIntent, object : ServiceConnection {
+                override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+                    isBound = true
+                    locationService =
+                        (service as? LocationService.LocationServiceBinder)?.getService()
+                    locationService?.status?.observe(viewLifecycleOwner) {
+                        notesListViewModel.send(GetNotesListEvent())
+                    }
+                }
 
-        notesListViewModel.send(GetNotesListEvent())
+                override fun onServiceDisconnected(name: ComponentName?) {
+                    isBound = false
+                    locationService = null
+                }
+            }, Context.BIND_AUTO_CREATE)
 
-        notesListViewModel.state.observe(viewLifecycleOwner) {
-            notesAdapter.submitList(it.notesList)
-            if (isBound) locationService!!.updateNotesList()
-            binding.emptyBlock.visibility = if (it.notesList.isEmpty()) View.VISIBLE else View.GONE
-        }
+            notesAdapter = NotesRecyclerViewAdapter(
+                NoteClickListener {
+                    findNavController().navigate(
+                        NotesListFragmentDirections.actionNotesListFragmentToNoteUpdateFragment(it.id)
+                    )
+                },
+                NoteClickListener {
+                    notesListViewModel.send(CheckerNoteListEvent(it))
+                }
+            )
 
-        binding.addNoteFab.setOnClickListener {
-            findNavController().navigate(R.id.action_notesListFragment_to_add_note_graph)
-        }
+            binding.notesList.adapter = notesAdapter
 
-        val locationLauncher = registerForActivityResult(
-            ActivityResultContracts.StartIntentSenderForResult()
-        ) { activityResult ->
-            if (activityResult.resultCode == RESULT_OK) {
-                sendCommandToService(ACTION_START_OR_RESUME_SERVICE)
+            notesListViewModel.send(GetNotesListEvent())
+
+            notesListViewModel.state.observe(viewLifecycleOwner) {
+                notesAdapter.submitList(it.notesList)
+                if (isBound) locationService!!.updateNotesList()
+                binding.emptyBlock.visibility =
+                    if (it.notesList.isEmpty()) View.VISIBLE else View.GONE
             }
-        }
 
-        binding.turnOnLocationServiceFab.setOnClickListener {
-            if (LocationUtility.hasLocationPermission(requireContext())) {
-                val locationRequest = LocationRequest.Builder(3000)
-                    .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
-                    .build()
-                val locationSettingsRequest = LocationSettingsRequest.Builder()
-                    .addLocationRequest(locationRequest)
-                    .setAlwaysShow(true)
-                    .build()
+            binding.addNoteFab.setOnClickListener {
+                findNavController().navigate(R.id.action_notesListFragment_to_add_note_graph)
+            }
 
-                LocationServices.getSettingsClient(requireContext())
-                    .checkLocationSettings(locationSettingsRequest)
-                    .addOnCompleteListener {
-                        try {
-                            it.getResult(ApiException::class.java)
-                            sendCommandToService(ACTION_START_OR_RESUME_SERVICE)
-                            Log.d(TAG, "GPS already enabled")
-                        } catch (e: ApiException) {
-                            if (e.statusCode == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
-                                val exception = e as ResolvableApiException
-                                try {
-                                    val intentSenderRequest = IntentSenderRequest
-                                        .Builder(exception.resolution)
-                                        .build()
-                                    locationLauncher.launch(intentSenderRequest)
-                                } catch (sendIntentException: IntentSender.SendIntentException) {
-                                    sendIntentException.printStackTrace()
+            val locationLauncher = registerForActivityResult(
+                ActivityResultContracts.StartIntentSenderForResult()
+            ) { activityResult ->
+                if (activityResult.resultCode == RESULT_OK) {
+                    sendCommandToService(ACTION_START_OR_RESUME_SERVICE)
+                }
+            }
+
+            binding.turnOnLocationServiceFab.setOnClickListener {
+                if (LocationUtility.hasLocationPermission(requireContext())) {
+                    val locationRequest = LocationRequest.Builder(3000)
+                        .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                        .build()
+                    val locationSettingsRequest = LocationSettingsRequest.Builder()
+                        .addLocationRequest(locationRequest)
+                        .setAlwaysShow(true)
+                        .build()
+
+                    LocationServices.getSettingsClient(requireContext())
+                        .checkLocationSettings(locationSettingsRequest)
+                        .addOnCompleteListener {
+                            try {
+                                it.getResult(ApiException::class.java)
+                                sendCommandToService(ACTION_START_OR_RESUME_SERVICE)
+                                Log.d(TAG, "GPS already enabled")
+                            } catch (e: ApiException) {
+                                if (e.statusCode == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
+                                    val exception = e as ResolvableApiException
+                                    try {
+                                        val intentSenderRequest = IntentSenderRequest
+                                            .Builder(exception.resolution)
+                                            .build()
+                                        locationLauncher.launch(intentSenderRequest)
+                                    } catch (sendIntentException: IntentSender.SendIntentException) {
+                                        sendIntentException.printStackTrace()
+                                    }
+                                }
+                                if (e.statusCode == LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE) {
+                                    Snackbar.make(
+                                        requireView(),
+                                        "GPS недоступно.",
+                                        Snackbar.LENGTH_LONG
+                                    ).show()
                                 }
                             }
-                            if (e.statusCode == LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE) {
-                                Snackbar.make(
-                                    requireView(),
-                                    "GPS недоступно.",
-                                    Snackbar.LENGTH_LONG
-                                ).show()
-                            }
                         }
-                    }
+                }
             }
-        }
 
-        return binding.root
+            return binding.root
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

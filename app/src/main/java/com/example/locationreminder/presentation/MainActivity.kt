@@ -47,6 +47,11 @@ class MainActivity : AppCompatActivity() {
             getString(R.string.tracking_notification_channel_name)
         )
 
+        createNotificationChannel(
+            getString(R.string.reached_notification_channel_id),
+            getString(R.string.reached_notification_channel_name)
+        )
+
         val requestPermissionLauncher =
             registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
                 if (!isGranted) {

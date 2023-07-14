@@ -22,4 +22,7 @@
     <string name="tracking_notification_channel_name">Отслеживание местоположения</string>
     <string name="turn_on_location_fab_content_description">Включить отслеживание локации</string>
     <string name="empty_box_drawable_descrtiption">empty_box</string>
+    <string name="reached_notification_channel_name">Достижение геозоны</string>
+    <string name="reached_notification_channel_id">reached_channel</string>
+    <string name="update_note_label">Изменение</string>
 </resources>
