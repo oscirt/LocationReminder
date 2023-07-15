@@ -5,12 +5,9 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.os.Binder
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.example.data.storage.LocationClient
 import com.example.domain.models.Note
 import com.example.domain.usecase.CheckNoteUseCase
@@ -44,13 +41,8 @@ class LocationService : Service() {
 
     private lateinit var notes: List<Note>
 
-    private val locationServiceBinder = LocationServiceBinder()
-
     private lateinit var notification: NotificationCompat.Builder
     private lateinit var notificationManager: NotificationManager
-
-    private var _status = MutableLiveData(false)
-    val status: LiveData<Boolean> get() = _status
 
     @Inject
     lateinit var getNotesUseCase: GetNotesUseCase
@@ -75,7 +67,7 @@ class LocationService : Service() {
                 }
 
                 else -> {
-
+                    Log.d(TAG, "Else block: ${it.action}")
                 }
             }
         }
@@ -90,7 +82,9 @@ class LocationService : Service() {
                 .setSmallIcon(R.drawable.baseline_location_on_24)
                 .setOngoing(true)
 
-        updateNotesList()
+        getNotesUseCase.execute()
+            .onEach { list -> notes = list.filter { !it.isChecked } }
+            .launchIn(serviceScope)
 
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -158,14 +152,9 @@ class LocationService : Service() {
         notificationManager.notify(NOTIFICATION_ID, updatedNotification.build())
     }
 
-    override fun onBind(intent: Intent?): IBinder {
+    override fun onBind(intent: Intent?): IBinder? {
         Log.d(TAG, "binded")
-        return locationServiceBinder
-    }
-
-    override fun onUnbind(intent: Intent?): Boolean {
-        Log.d(TAG, "unbinded")
-        return super.onUnbind(intent)
+        return null
     }
 
     override fun onDestroy() {
@@ -174,18 +163,9 @@ class LocationService : Service() {
         serviceScope.cancel()
     }
 
-    fun updateNotesList() {
-        serviceScope.launch {
-            notes = getNotesUseCase.execute().filter { !it.isChecked }
-            Log.d(TAG, "updated list: $notes")
-        }
-    }
-
     private fun reachedGeoZone(note: Note) {
         serviceScope.launch {
             checkNoteUseCase.execute(note)
-            updateNotesList()
-            _status.postValue(_status.value!!.not())
             val reachedNotification = NotificationCompat.Builder(applicationContext, getString(R.string.tracking_notification_channel_id))
                 .setSmallIcon(R.drawable.baseline_flag_24)
             val contentIntent = Intent(applicationContext, MainActivity::class.java).apply {
@@ -209,12 +189,6 @@ class LocationService : Service() {
                     pendingIntent
                 ).priority = NotificationCompat.PRIORITY_MAX
             notificationManager.notify(REACHED_NOTIFICATION_ID, reachedNotification.build())
-        }
-    }
-
-    inner class LocationServiceBinder : Binder() {
-        fun getService() : LocationService {
-            return this@LocationService
         }
     }
 

@@ -1,13 +1,9 @@
 package com.example.locationreminder.presentation.fragments
 
 import android.app.Activity.RESULT_OK
-import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
-import android.content.ServiceConnection
 import android.os.Bundle
-import android.os.IBinder
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -27,7 +23,6 @@ import com.example.locationreminder.presentation.adapter.NoteClickListener
 import com.example.locationreminder.presentation.adapter.NotesRecyclerViewAdapter
 import com.example.locationreminder.presentation.viewmodel.NotesViewModel
 import com.example.locationreminder.presentation.viewmodel.event.CheckerNoteListEvent
-import com.example.locationreminder.presentation.viewmodel.event.GetNotesListEvent
 import com.example.locationreminder.services.LocationService
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
@@ -59,9 +54,6 @@ class NotesListFragment : Fragment() {
     private lateinit var notesAdapter: NotesRecyclerViewAdapter
     private lateinit var signInLauncher: ActivityResultLauncher<Intent>
 
-    private var isBound = false
-    private var locationService: LocationService? = null
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -89,23 +81,6 @@ class NotesListFragment : Fragment() {
                 onSignInResult(it)
             }
 
-            val serviceIntent = Intent(requireContext(), LocationService::class.java)
-            requireContext().bindService(serviceIntent, object : ServiceConnection {
-                override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-                    isBound = true
-                    locationService =
-                        (service as? LocationService.LocationServiceBinder)?.getService()
-                    locationService?.status?.observe(viewLifecycleOwner) {
-                        notesListViewModel.send(GetNotesListEvent())
-                    }
-                }
-
-                override fun onServiceDisconnected(name: ComponentName?) {
-                    isBound = false
-                    locationService = null
-                }
-            }, Context.BIND_AUTO_CREATE)
-
             notesAdapter = NotesRecyclerViewAdapter(
                 NoteClickListener {
                     findNavController().navigate(
@@ -119,11 +94,8 @@ class NotesListFragment : Fragment() {
 
             binding.notesList.adapter = notesAdapter
 
-            notesListViewModel.send(GetNotesListEvent())
-
             notesListViewModel.state.observe(viewLifecycleOwner) {
                 notesAdapter.submitList(it.notesList)
-                if (isBound) locationService!!.updateNotesList()
                 binding.emptyBlock.visibility =
                     if (it.notesList.isEmpty()) View.VISIBLE else View.GONE
             }

@@ -1,13 +1,8 @@
 package com.example.locationreminder.presentation.fragments
 
 import android.app.Activity
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
 import android.content.IntentSender
-import android.content.ServiceConnection
 import android.os.Bundle
-import android.os.IBinder
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -27,7 +22,6 @@ import com.example.locationreminder.presentation.viewmodel.AddNoteViewModel
 import com.example.locationreminder.presentation.viewmodel.event.AddNoteEvent
 import com.example.locationreminder.presentation.viewmodel.event.SaveInputsEvent
 import com.example.locationreminder.presentation.viewmodel.state.locationState.ChosenLocation
-import com.example.locationreminder.services.LocationService
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationRequest
@@ -46,9 +40,6 @@ class AddNoteFragment : Fragment() {
     private val viewModel by navGraphViewModels<AddNoteViewModel>(R.id.add_note_graph) { defaultViewModelProviderFactory }
     private val args: AddNoteFragmentArgs by navArgs()
 
-    private var isBound = false
-    private var locationService: LocationService? = null
-
     private var chosenLocation: ChosenLocation? = null
 
     override fun onCreateView(
@@ -62,19 +53,6 @@ class AddNoteFragment : Fragment() {
             container,
             false
         )
-
-        val serviceIntent = Intent(requireContext(), LocationService::class.java)
-        requireContext().bindService(serviceIntent, object : ServiceConnection {
-            override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-                isBound = true
-                locationService = (service as? LocationService.LocationServiceBinder)?.getService()
-            }
-
-            override fun onServiceDisconnected(name: ComponentName?) {
-                isBound = false
-                locationService = null
-            }
-        }, Context.BIND_AUTO_CREATE)
 
         binding.saveNoteFab.setOnClickListener {
             Log.d("TAG", "onCreateView: $chosenLocation")
@@ -163,7 +141,6 @@ class AddNoteFragment : Fragment() {
         viewModel.state.observe(viewLifecycleOwner) {
             if (it.id != -1L) {
                 Log.d(TAG, "added")
-                if (isBound) locationService!!.updateNotesList()
                 findNavController().navigateUp()
             }
             Log.d("TAG", "onCreateView: ${it.name}|${it.description}")

@@ -2,11 +2,12 @@ package com.example.domain.usecase
 
 import com.example.domain.models.Note
 import com.example.domain.repository.NotesRepository
+import kotlinx.coroutines.flow.Flow
 
 class GetNotesUseCase(
     private val notesRepository: NotesRepository
 ) {
-    suspend fun execute() : List<Note> {
+    fun execute() : Flow<List<Note>> {
         return notesRepository.getAll()
     }
 }

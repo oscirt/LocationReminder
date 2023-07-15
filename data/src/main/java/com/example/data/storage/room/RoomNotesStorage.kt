@@ -4,6 +4,7 @@ import android.content.Context
 import com.example.data.storage.NotesStorage
 import com.example.data.storage.room.database.NotesDatabase
 import com.example.data.storage.room.models.NoteEntity
+import kotlinx.coroutines.flow.Flow
 
 class RoomNotesStorage(
     context: Context
@@ -11,7 +12,7 @@ class RoomNotesStorage(
 
     private val notesDao = NotesDatabase.getDatabase(context).notesDao()
 
-    override suspend fun getAll(): List<NoteEntity> {
+    override fun getAll(): Flow<List<NoteEntity>> {
         return notesDao.getAll()
     }
 

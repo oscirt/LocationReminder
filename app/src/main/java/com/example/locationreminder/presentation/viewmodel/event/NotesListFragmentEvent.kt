@@ -4,5 +4,4 @@ import com.example.domain.models.Note
 
 interface NotesListFragmentEvent
 
-class GetNotesListEvent : NotesListFragmentEvent
 class CheckerNoteListEvent(val note: Note) : NotesListFragmentEvent

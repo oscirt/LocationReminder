@@ -4,12 +4,14 @@ import com.example.data.storage.NotesStorage
 import com.example.data.storage.room.models.NoteEntity
 import com.example.domain.models.Note
 import com.example.domain.repository.NotesRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.transform
 
 class NotesRepositoryImpl(
     private val notesStorage: NotesStorage
 ) : NotesRepository {
-    override suspend fun getAll(): List<Note> {
-        return notesStorage.getAll().map { mapNoteEntityToNote(it) }
+    override fun getAll(): Flow<List<Note>> {
+        return notesStorage.getAll().transform { list -> emit(list.map { mapNoteEntityToNote(it) }) }
     }
 
     override suspend fun getById(id: Long): Note {
