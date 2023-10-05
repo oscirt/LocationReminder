@@ -41,45 +41,34 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
-            android:id="@+id/location_picker"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:minHeight="48dp"
-            android:text="@string/select_destination_text"
-            android:drawablePadding="3dp"
-            android:padding="8dp"
-            android:gravity="center|start"
-            android:clickable="true"
-            android:focusable="true"
-            android:longClickable="true"
-            android:background="?attr/selectableItemBackground"
-            app:drawableLeftCompat="@drawable/baseline_location_on_24"
-            app:layout_constraintTop_toBottomOf="@id/description_edit"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
-
-        <TextView
             android:id="@+id/chosen_location"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:minHeight="48dp"
             android:gravity="center"
             style="@style/NoteDestination"
-            app:layout_constraintTop_toBottomOf="@id/location_picker"
+            app:layout_constraintTop_toBottomOf="@id/description_edit"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
+
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/map"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="16dp"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            app:layout_constraintTop_toBottomOf="@id/chosen_location"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/save_note_fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
+            android:layout_marginEnd="62dp"
             android:layout_marginBottom="16dp"
             android:src="@drawable/save_note_vector_24"
             android:contentDescription="@string/save_note_fab_content_description"

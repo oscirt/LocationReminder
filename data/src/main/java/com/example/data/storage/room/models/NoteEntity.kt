@@ -11,5 +11,6 @@ data class NoteEntity(
     @ColumnInfo(name = "description") val description: String,
     @ColumnInfo(name = "place_name") val placeName: String,
     @ColumnInfo(name = "place_latitude") val latitude: Double,
-    @ColumnInfo(name = "place_longitude") val longitude: Double
+    @ColumnInfo(name = "place_longitude") val longitude: Double,
+    @ColumnInfo(name = "is_checked") val isChecked: Boolean
 )

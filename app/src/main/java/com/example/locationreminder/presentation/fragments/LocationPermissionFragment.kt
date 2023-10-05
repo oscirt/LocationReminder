@@ -1,18 +1,21 @@
 package com.example.locationreminder.presentation.fragments
 
 import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.locationreminder.R
 import com.example.locationreminder.databinding.FragmentLocationPermissionBinding
-import com.google.android.material.snackbar.Snackbar
+import com.example.locationreminder.other.LocationPermissionSettingsDialogFragment
 
 class LocationPermissionFragment : Fragment() {
 
@@ -23,6 +26,16 @@ class LocationPermissionFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            findNavController().navigate(R.id.action_locationPermissionFragment_to_notesListFragment)
+        }
         binding = DataBindingUtil.inflate(
             inflater,
             R.layout.fragment_location_permission,
@@ -32,14 +45,12 @@ class LocationPermissionFragment : Fragment() {
 
         val permissionsLauncher =
             registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+                Log.d(TAG, "onCreateView: $it")
                 if (!it.containsValue(false)) {
-                    findNavController().navigateUp()
+                    findNavController().navigate(R.id.action_locationPermissionFragment_to_notesListFragment)
                 } else {
-                    Snackbar.make(
-                        requireView(),
-                        "Без этого разрешения некоторые функции не будут доступны.",
-                        Snackbar.LENGTH_LONG
-                    ).show()
+                    val dialog = LocationPermissionSettingsDialogFragment()
+                    dialog.show(childFragmentManager, LocationPermissionSettingsDialogFragment.TAG)
                 }
             }
 
@@ -67,7 +78,6 @@ class LocationPermissionFragment : Fragment() {
 
     private companion object {
         private const val TAG = "LocationPermissionFragment"
-        private const val LOCATION_PERMISSION_REQUEST_CODE = 123
     }
 
 }

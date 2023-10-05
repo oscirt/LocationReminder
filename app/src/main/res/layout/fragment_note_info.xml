@@ -55,5 +55,16 @@
             style="@style/NoteDestination"
             tools:text="SDJFLKSDJFLKSDFJ"/>
 
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/map"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="16dp"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            app:layout_constraintTop_toBottomOf="@id/destination_info"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

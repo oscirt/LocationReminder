@@ -1,11 +1,11 @@
-package com.example.domain.models
+package com.example.locationreminder.presentation.viewmodel.state
 
-data class Note (
+data class NoteUpdateState(
     val id: Long,
     val name: String,
     val description: String,
     val placeName: String,
     val latitude: Double,
     val longitude: Double,
-    var isChecked: Boolean
+    val isChecked: Boolean
 )

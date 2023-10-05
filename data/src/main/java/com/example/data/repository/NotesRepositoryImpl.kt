@@ -4,12 +4,14 @@ import com.example.data.storage.NotesStorage
 import com.example.data.storage.room.models.NoteEntity
 import com.example.domain.models.Note
 import com.example.domain.repository.NotesRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.transform
 
 class NotesRepositoryImpl(
     private val notesStorage: NotesStorage
 ) : NotesRepository {
-    override suspend fun getAll(): List<Note> {
-        return notesStorage.getAll().map { mapNoteEntityToNote(it) }
+    override fun getAll(): Flow<List<Note>> {
+        return notesStorage.getAll().transform { list -> emit(list.map { mapNoteEntityToNote(it) }) }
     }
 
     override suspend fun getById(id: Long): Note {
@@ -22,6 +24,11 @@ class NotesRepositoryImpl(
         return notesStorage.addNote(noteEntity)
     }
 
+    override suspend fun updateNote(note: Note) {
+        val noteEntity = mapNoteToNoteEntity(note)
+        notesStorage.updateNote(noteEntity)
+    }
+
     private fun mapNoteEntityToNote(noteEntity: NoteEntity) : Note {
         return Note(
             id = noteEntity.id,
@@ -29,7 +36,8 @@ class NotesRepositoryImpl(
             description = noteEntity.description,
             placeName = noteEntity.placeName,
             latitude = noteEntity.latitude,
-            longitude = noteEntity.longitude
+            longitude = noteEntity.longitude,
+            isChecked = noteEntity.isChecked
         )
     }
 
@@ -40,7 +48,8 @@ class NotesRepositoryImpl(
             description = note.description,
             placeName = note.placeName,
             latitude = note.latitude,
-            longitude = note.longitude
+            longitude = note.longitude,
+            isChecked = note.isChecked
         )
     }
 }

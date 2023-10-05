@@ -1,18 +1,20 @@
 package com.example.locationreminder.presentation.fragments
 
-import android.Manifest
-import android.content.pm.PackageManager
+import android.app.Activity
+import android.content.IntentSender
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.app.ActivityCompat
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
+import com.example.data.storage.location.LocationUtility
 import com.example.domain.models.Note
 import com.example.locationreminder.R
 import com.example.locationreminder.databinding.FragmentAddNoteBinding
@@ -20,6 +22,14 @@ import com.example.locationreminder.presentation.viewmodel.AddNoteViewModel
 import com.example.locationreminder.presentation.viewmodel.event.AddNoteEvent
 import com.example.locationreminder.presentation.viewmodel.event.SaveInputsEvent
 import com.example.locationreminder.presentation.viewmodel.state.locationState.ChosenLocation
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
+import com.google.android.gms.location.LocationSettingsStatusCodes
+import com.google.android.gms.location.Priority
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.UUID
 
@@ -45,7 +55,7 @@ class AddNoteFragment : Fragment() {
         )
 
         binding.saveNoteFab.setOnClickListener {
-            Log.d("TAG", "3onCreateView: $chosenLocation")
+            Log.d("TAG", "onCreateView: $chosenLocation")
             if (!checkValuesNotEmpty()) {
                 val note = Note(
                     id = UUID.randomUUID().mostSignificantBits and Long.MAX_VALUE,
@@ -53,21 +63,17 @@ class AddNoteFragment : Fragment() {
                     description = binding.descriptionEdit.editText!!.text.toString(),
                     placeName = chosenLocation!!.name,
                     latitude = chosenLocation!!.point!!.latitude,
-                    longitude = chosenLocation!!.point!!.longitude
+                    longitude = chosenLocation!!.point!!.longitude,
+                    isChecked = false
                 )
                 viewModel.send(AddNoteEvent(note = note))
             }
         }
 
-        binding.locationReminder.setOnClickListener {
-            if (ActivityCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
+        val locationLauncher = registerForActivityResult(
+            ActivityResultContracts.StartIntentSenderForResult()
+        ) { activityResult ->
+            if (activityResult.resultCode == Activity.RESULT_OK) {
                 viewModel.send(
                     SaveInputsEvent(
                         name = binding.nameEdit.editText?.text.toString(),
@@ -75,6 +81,53 @@ class AddNoteFragment : Fragment() {
                     )
                 )
                 findNavController().navigate(R.id.action_addNoteFragment_to_fragmentLocationChoose)
+            }
+        }
+
+        binding.locationPicker.setOnClickListener {
+            if (LocationUtility.hasLocationPermission(requireContext())) {
+                val locationRequest = LocationRequest.Builder(3000)
+                    .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                    .build()
+                val locationSettingsRequest = LocationSettingsRequest.Builder()
+                    .addLocationRequest(locationRequest)
+                    .setAlwaysShow(true)
+                    .build()
+
+                LocationServices.getSettingsClient(requireContext())
+                    .checkLocationSettings(locationSettingsRequest)
+                    .addOnCompleteListener {
+                        try {
+                            it.getResult(ApiException::class.java)
+                            viewModel.send(
+                                SaveInputsEvent(
+                                    name = binding.nameEdit.editText?.text.toString(),
+                                    description = binding.descriptionEdit.editText?.text.toString()
+                                )
+                            )
+                            findNavController().navigate(R.id.action_addNoteFragment_to_fragmentLocationChoose)
+                            Log.d(TAG, "GPS already enabled")
+                        } catch (e: ApiException) {
+                            if (e.statusCode == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
+                                val exception = e as ResolvableApiException
+                                try {
+                                    val intentSenderRequest = IntentSenderRequest
+                                        .Builder(exception.resolution)
+                                        .build()
+                                    locationLauncher.launch(intentSenderRequest)
+                                } catch (sendIntentException: IntentSender.SendIntentException) {
+                                    sendIntentException.printStackTrace()
+                                }
+                            }
+                            if (e.statusCode == LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE) {
+                                Snackbar.make(
+                                    requireView(),
+                                    "GPS недоступно.",
+                                    Snackbar.LENGTH_LONG
+                                ).show()
+                            }
+                        }
+                    }
             }
         }
 
@@ -86,7 +139,10 @@ class AddNoteFragment : Fragment() {
         }
 
         viewModel.state.observe(viewLifecycleOwner) {
-            if (it.id != -1L) findNavController().navigateUp()
+            if (it.id != -1L) {
+                Log.d(TAG, "added")
+                findNavController().navigateUp()
+            }
             Log.d("TAG", "onCreateView: ${it.name}|${it.description}")
             binding.nameEdit.editText?.setText(it.name)
             binding.descriptionEdit.editText?.setText(it.description)
@@ -98,7 +154,7 @@ class AddNoteFragment : Fragment() {
     private fun checkValuesNotEmpty(): Boolean {
         var error = false
         if (binding.nameEdit.editText!!.text.toString().isBlank()) {
-            binding.nameEdit.error = "Необходимо указать"
+            binding.nameEdit.error = "Необходимо указать название"
             error = true
         } else {
             binding.nameEdit.error = null
@@ -110,6 +166,10 @@ class AddNoteFragment : Fragment() {
             error = true
         }
         return error
+    }
+
+    private companion object {
+        private const val TAG = "AddNoteFragment"
     }
 
 }

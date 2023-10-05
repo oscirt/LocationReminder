@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import com.example.locationreminder.R
 import dagger.hilt.android.AndroidEntryPoint
@@ -30,9 +31,11 @@ class MainActivity : AppCompatActivity() {
         val navHost = supportFragmentManager
             .findFragmentById(R.id.fragment_container) as NavHostFragment
         navController = navHost.navController
+        val appbarConfiguration = AppBarConfiguration(setOf(R.id.notesListFragment, R.id.locationPermissionFragment))
         NavigationUI.setupActionBarWithNavController(
             activity = this,
-            navController = navController
+            navController = navController,
+            appbarConfiguration
         )
 
         notificationManager = ContextCompat.getSystemService(
@@ -41,7 +44,14 @@ class MainActivity : AppCompatActivity() {
 
         createNotificationChannel(
             getString(R.string.tracking_notification_channel_id),
-            getString(R.string.tracking_notification_channel_name)
+            getString(R.string.tracking_notification_channel_name),
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+
+        createNotificationChannel(
+            getString(R.string.reached_notification_channel_id),
+            getString(R.string.reached_notification_channel_name),
+            NotificationManager.IMPORTANCE_HIGH
         )
 
         val requestPermissionLauncher =
@@ -66,13 +76,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun createNotificationChannel(
         channelId: String,
-        channelName: String
+        channelName: String,
+        importance: Int
     ) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notificationChannel = NotificationChannel(
                 channelId,
                 channelName,
-                NotificationManager.IMPORTANCE_DEFAULT
+                importance
             ).apply {
                 setShowBadge(false)
                 enableLights(true)
