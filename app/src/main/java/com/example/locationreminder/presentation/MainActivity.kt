@@ -44,12 +44,14 @@ class MainActivity : AppCompatActivity() {
 
         createNotificationChannel(
             getString(R.string.tracking_notification_channel_id),
-            getString(R.string.tracking_notification_channel_name)
+            getString(R.string.tracking_notification_channel_name),
+            NotificationManager.IMPORTANCE_DEFAULT
         )
 
         createNotificationChannel(
             getString(R.string.reached_notification_channel_id),
-            getString(R.string.reached_notification_channel_name)
+            getString(R.string.reached_notification_channel_name),
+            NotificationManager.IMPORTANCE_HIGH
         )
 
         val requestPermissionLauncher =
@@ -74,13 +76,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun createNotificationChannel(
         channelId: String,
-        channelName: String
+        channelName: String,
+        importance: Int
     ) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notificationChannel = NotificationChannel(
                 channelId,
                 channelName,
-                NotificationManager.IMPORTANCE_DEFAULT
+                importance
             ).apply {
                 setShowBadge(false)
                 enableLights(true)

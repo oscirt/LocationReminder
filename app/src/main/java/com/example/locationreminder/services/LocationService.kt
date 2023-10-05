@@ -166,8 +166,10 @@ class LocationService : Service() {
     private fun reachedGeoZone(note: Note) {
         serviceScope.launch {
             checkNoteUseCase.execute(note)
-            val reachedNotification = NotificationCompat.Builder(applicationContext, getString(R.string.tracking_notification_channel_id))
-                .setSmallIcon(R.drawable.baseline_flag_24)
+            val reachedNotification = NotificationCompat.Builder(
+                applicationContext,
+                getString(R.string.tracking_notification_channel_id)
+            ).setSmallIcon(R.drawable.baseline_flag_24)
             val contentIntent = Intent(applicationContext, MainActivity::class.java).apply {
                 putExtra("id", note.id)
                 flags = Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP
