@@ -9,7 +9,8 @@ An Android app with a TODO list with location reminders that reminds the user to
 
 ## Stack
  - Kotlin
- - MVVM
+ - MVI
+ - Clean Architecture
  - Jetpack Navigation
  - Hilt
  - Firebase auth
